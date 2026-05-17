@@ -88,8 +88,9 @@ namespace ParcelOffice_project
             this.btnSearch = new System.Windows.Forms.Button();
             this.dgvParcels = new System.Windows.Forms.DataGridView();
             this.panelSearchButtons = new System.Windows.Forms.Panel();
-            this.btnGenerateToken = new System.Windows.Forms.Button();
             this.btnMarkCollected = new System.Windows.Forms.Button();
+            this.btnUpdateParcel = new System.Windows.Forms.Button();
+            this.btnDeleteParcel = new System.Windows.Forms.Button();
             this.panelDashboardContainer = new System.Windows.Forms.Panel();
             this.panelDashboardTitle = new System.Windows.Forms.Label();
             this.panelTotalParcels = new System.Windows.Forms.Panel();
@@ -134,16 +135,20 @@ namespace ParcelOffice_project
             this.SuspendLayout();
 
             // ===== GLOBAL COLORS =====
-            Color mainBg = Color.FromArgb(244, 247, 252);
-            Color cardBg = Color.White;
-            Color primaryColor = Color.FromArgb(37, 99, 235);
-            Color successColor = Color.FromArgb(22, 163, 74);
-            Color dangerColor = Color.FromArgb(220, 38, 38);
-            Color warningColor = Color.FromArgb(245, 158, 11);
-            Color textDark = Color.FromArgb(30, 41, 59);
-            Color textMuted = Color.FromArgb(100, 116, 139);
-            Color borderColor = Color.FromArgb(203, 213, 225);
-            Color hoverColor = Color.FromArgb(59, 130, 246);
+            Color mainBg = Color.FromArgb(248, 250, 252);             // Soft light gray-blue
+            Color cardBg = Color.White;                               // Pure white for cards
+            Color primaryColor = Color.FromArgb(37, 99, 235);        // Royal blue
+            Color successColor = Color.FromArgb(22, 163, 74);         // Green
+            Color dangerColor = Color.FromArgb(220, 38, 38);         // Red
+            Color warningColor = Color.FromArgb(245, 158, 11);        // Orange
+            Color textDark = Color.FromArgb(31, 41, 55);              // Dark gray (#1F2937)
+            Color textMuted = Color.FromArgb(107, 114, 128);          // Medium gray
+            Color borderColor = Color.FromArgb(209, 213, 219);        // Light border
+            Color hoverColor = Color.FromArgb(59, 130, 246);         // Light blue hover
+            Color cardBorderColor = Color.FromArgb(226, 232, 240);    // Subtle card border
+            Color inputBg = Color.FromArgb(255, 255, 255);            // White input background
+            Color inputBorder = Color.FromArgb(203, 213, 225);        // Input border
+            Color rowAlternate = Color.FromArgb(248, 250, 252);       // Alternating row
 
             // ===== FORM SETTINGS =====
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -182,7 +187,7 @@ namespace ParcelOffice_project
 
             // Card 1 - School
             this.panelSchool.BackColor = cardBg;
-            this.panelSchool.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelSchool.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.panelSchool.Location = new System.Drawing.Point(0, 0);
             this.panelSchool.Size = new System.Drawing.Size(275, 210);
             this.lblSchoolTitle.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
@@ -213,7 +218,7 @@ namespace ParcelOffice_project
 
             // Card 2 - Department
             this.panelDepartment.BackColor = cardBg;
-            this.panelDepartment.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelDepartment.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.panelDepartment.Location = new System.Drawing.Point(295, 0);
             this.panelDepartment.Size = new System.Drawing.Size(275, 210);
             this.lblDepartmentTitle.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
@@ -251,7 +256,7 @@ namespace ParcelOffice_project
 
             // Card 3 - Course
             this.panelCourse.BackColor = cardBg;
-            this.panelCourse.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelCourse.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.panelCourse.Location = new System.Drawing.Point(590, 0);
             this.panelCourse.Size = new System.Drawing.Size(275, 210);
             this.lblCourseTitle.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
@@ -289,7 +294,7 @@ namespace ParcelOffice_project
 
             // Card 4 - Student
             this.panelStudent.BackColor = cardBg;
-            this.panelStudent.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelStudent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.panelStudent.Location = new System.Drawing.Point(885, 0);
             this.panelStudent.Size = new System.Drawing.Size(275, 210);
             this.lblStudentTitle.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
@@ -427,7 +432,7 @@ namespace ParcelOffice_project
 
             // Search Panel
             this.panelParcelSearch.BackColor = cardBg;
-            this.panelParcelSearch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelParcelSearch.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.panelParcelSearch.Location = new System.Drawing.Point(20, 20);
             this.panelParcelSearch.Size = new System.Drawing.Size(560, 100);
 
@@ -561,22 +566,22 @@ namespace ParcelOffice_project
             this.panelSearchContainer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabSearch.Controls.Add(this.panelSearchContainer);
 
-            // Search Panel
+            // Search Panel - centered with balanced width
             this.panelSearchTop.BackColor = cardBg;
-            this.panelSearchTop.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelSearchTop.Location = new System.Drawing.Point(20, 20);
-            this.panelSearchTop.Size = new System.Drawing.Size(1160, 80);
+            this.panelSearchTop.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.panelSearchTop.Location = new System.Drawing.Point(20, 15);
+            this.panelSearchTop.Size = new System.Drawing.Size(1160, 75);
 
             this.lblSearchPlaceholder.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.lblSearchPlaceholder.ForeColor = textMuted;
-            this.lblSearchPlaceholder.Location = new System.Drawing.Point(20, 12);
+            this.lblSearchPlaceholder.Location = new System.Drawing.Point(25, 10);
             this.lblSearchPlaceholder.TabIndex = 28;
             this.lblSearchPlaceholder.Text = "Search by Parcel ID / Student Name / Tracking Number / Vendor Name";
 
             this.txtSearch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtSearch.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.txtSearch.Location = new System.Drawing.Point(20, 38);
-            this.txtSearch.Size = new System.Drawing.Size(950, 32);
+            this.txtSearch.Location = new System.Drawing.Point(25, 35);
+            this.txtSearch.Size = new System.Drawing.Size(940, 32);
             this.txtSearch.TabIndex = 29;
 
             this.btnSearch.BackColor = primaryColor;
@@ -584,8 +589,8 @@ namespace ParcelOffice_project
             this.btnSearch.FlatAppearance.BorderSize = 0;
             this.btnSearch.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
             this.btnSearch.ForeColor = Color.White;
-            this.btnSearch.Location = new System.Drawing.Point(985, 36);
-            this.btnSearch.Size = new System.Drawing.Size(155, 36);
+            this.btnSearch.Location = new System.Drawing.Point(975, 33);
+            this.btnSearch.Size = new System.Drawing.Size(160, 36);
             this.btnSearch.TabIndex = 30;
             this.btnSearch.Text = "Search";
             this.btnSearch.UseVisualStyleBackColor = false;
@@ -625,39 +630,56 @@ namespace ParcelOffice_project
             this.dgvParcels.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(248, 250, 252);
             this.panelSearchContainer.Controls.Add(this.dgvParcels);
 
-            // Bottom Buttons Panel
+            // Bottom Buttons Panel - centered
             this.panelSearchButtons.BackColor = mainBg;
-            this.panelSearchButtons.Location = new System.Drawing.Point(20, 550);
+            this.panelSearchButtons.Location = new System.Drawing.Point(20, 545);
             this.panelSearchButtons.Size = new System.Drawing.Size(1160, 50);
 
-            this.btnGenerateToken.BackColor = warningColor;
-            this.btnGenerateToken.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnGenerateToken.FlatAppearance.BorderSize = 0;
-            this.btnGenerateToken.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
-            this.btnGenerateToken.ForeColor = Color.White;
-            this.btnGenerateToken.Location = new System.Drawing.Point(420, 8);
-            this.btnGenerateToken.Size = new System.Drawing.Size(180, 40);
-            this.btnGenerateToken.TabIndex = 32;
-            this.btnGenerateToken.Text = "Generate Token";
-            this.btnGenerateToken.UseVisualStyleBackColor = false;
-            this.btnGenerateToken.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnGenerateToken.Click += new System.EventHandler(this.btnGenerateToken_Click);
-
+            // Mark Collected Button - Green - centered
             this.btnMarkCollected.BackColor = successColor;
             this.btnMarkCollected.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnMarkCollected.FlatAppearance.BorderSize = 0;
             this.btnMarkCollected.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
             this.btnMarkCollected.ForeColor = Color.White;
-            this.btnMarkCollected.Location = new System.Drawing.Point(620, 8);
+            this.btnMarkCollected.Location = new System.Drawing.Point(320, 8);
             this.btnMarkCollected.Size = new System.Drawing.Size(180, 40);
-            this.btnMarkCollected.TabIndex = 33;
+            this.btnMarkCollected.TabIndex = 32;
             this.btnMarkCollected.Text = "Mark Collected";
             this.btnMarkCollected.UseVisualStyleBackColor = false;
             this.btnMarkCollected.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnMarkCollected.Click += new System.EventHandler(this.btnMarkCollected_Click);
 
-            this.panelSearchButtons.Controls.Add(this.btnGenerateToken);
+            // Update Parcel Button - Blue - centered
+            this.btnUpdateParcel.BackColor = primaryColor;
+            this.btnUpdateParcel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnUpdateParcel.FlatAppearance.BorderSize = 0;
+            this.btnUpdateParcel.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
+            this.btnUpdateParcel.ForeColor = Color.White;
+            this.btnUpdateParcel.Location = new System.Drawing.Point(510, 8);
+            this.btnUpdateParcel.Size = new System.Drawing.Size(180, 40);
+            this.btnUpdateParcel.TabIndex = 33;
+            this.btnUpdateParcel.Text = "Update Parcel";
+            this.btnUpdateParcel.UseVisualStyleBackColor = false;
+            this.btnUpdateParcel.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnUpdateParcel.Click += new System.EventHandler(this.btnUpdateParcel_Click);
+
+            // Delete Parcel Button - Red - centered
+            this.btnDeleteParcel.BackColor = dangerColor;
+            this.btnDeleteParcel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnDeleteParcel.FlatAppearance.BorderSize = 0;
+            this.btnDeleteParcel.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
+            this.btnDeleteParcel.ForeColor = Color.White;
+            this.btnDeleteParcel.Location = new System.Drawing.Point(700, 8);
+            this.btnDeleteParcel.Size = new System.Drawing.Size(180, 40);
+            this.btnDeleteParcel.TabIndex = 34;
+            this.btnDeleteParcel.Text = "Delete Parcel";
+            this.btnDeleteParcel.UseVisualStyleBackColor = false;
+            this.btnDeleteParcel.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnDeleteParcel.Click += new System.EventHandler(this.btnDeleteParcel_Click);
+
             this.panelSearchButtons.Controls.Add(this.btnMarkCollected);
+            this.panelSearchButtons.Controls.Add(this.btnUpdateParcel);
+            this.panelSearchButtons.Controls.Add(this.btnDeleteParcel);
             this.panelSearchContainer.Controls.Add(this.panelSearchButtons);
 
             // ===== TAB 4 - DASHBOARD =====
@@ -677,8 +699,8 @@ namespace ParcelOffice_project
 
             // Total Parcels Card
             this.panelTotalParcels.BackColor = cardBg;
-            this.panelTotalParcels.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelTotalParcels.Location = new System.Drawing.Point(130, 100);
+            this.panelTotalParcels.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.panelTotalParcels.Location = new System.Drawing.Point(80, 100);
             this.panelTotalParcels.Size = new System.Drawing.Size(280, 200);
             this.panelTotalIcon.BackColor = Color.FromArgb(37, 99, 235);
             this.panelTotalIcon.Location = new System.Drawing.Point(0, 0);
@@ -708,8 +730,8 @@ namespace ParcelOffice_project
 
             // Pending Parcels Card
             this.panelPendingParcels.BackColor = cardBg;
-            this.panelPendingParcels.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelPendingParcels.Location = new System.Drawing.Point(460, 100);
+            this.panelPendingParcels.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.panelPendingParcels.Location = new System.Drawing.Point(440, 100);
             this.panelPendingParcels.Size = new System.Drawing.Size(280, 200);
             this.panelPendingIcon.BackColor = Color.FromArgb(245, 158, 11);
             this.panelPendingIcon.Location = new System.Drawing.Point(0, 0);
@@ -739,8 +761,8 @@ namespace ParcelOffice_project
 
             // Collected Parcels Card
             this.panelCollectedParcels.BackColor = cardBg;
-            this.panelCollectedParcels.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelCollectedParcels.Location = new System.Drawing.Point(790, 100);
+            this.panelCollectedParcels.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.panelCollectedParcels.Location = new System.Drawing.Point(800, 100);
             this.panelCollectedParcels.Size = new System.Drawing.Size(280, 200);
             this.panelCollectedIcon.BackColor = Color.FromArgb(22, 163, 74);
             this.panelCollectedIcon.Location = new System.Drawing.Point(0, 0);
@@ -986,7 +1008,8 @@ namespace ParcelOffice_project
         private System.Windows.Forms.TextBox txtSearch;
         private System.Windows.Forms.Button btnSearch;
         private System.Windows.Forms.DataGridView dgvParcels;
-        private System.Windows.Forms.Button btnGenerateToken;
         private System.Windows.Forms.Button btnMarkCollected;
+        private System.Windows.Forms.Button btnUpdateParcel;
+        private System.Windows.Forms.Button btnDeleteParcel;
     }
 }

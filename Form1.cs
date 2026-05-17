@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using System.Collections.Generic;
@@ -1246,6 +1247,149 @@ namespace ParcelOffice_project
                 catch (Exception ex)
                 {
                     MessageBox.Show("Error marking parcel as collected: " + ex.Message);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Select a parcel first.");
+            }
+        }
+
+        private void btnUpdateParcel_Click(object sender, EventArgs e)
+        {
+            if (dgvParcels.SelectedCells.Count > 0)
+            {
+                try
+                {
+                    int rowIndex = dgvParcels.SelectedCells[0].RowIndex;
+                    int parcelId = Convert.ToInt32(dgvParcels.Rows[rowIndex].Cells["ParcelId"].Value);
+
+                    // Get current parcel details
+                    DataTable dt = DatabaseHelper.ExecuteQuery("SELECT p.ParcelId, p.TrackingNumber, p.VendorName, p.Status, s.StudentId, s.StudentName " +
+                        "FROM Parcels p JOIN Students s ON p.StudentId = s.StudentId WHERE p.ParcelId = @pid",
+                        new SqlParameter("@pid", parcelId));
+
+                    if (dt.Rows.Count == 0)
+                    {
+                        MessageBox.Show("Parcel not found.");
+                        return;
+                    }
+
+                    string currentTracking = dt.Rows[0]["TrackingNumber"].ToString();
+                    string currentVendor = dt.Rows[0]["VendorName"] == DBNull.Value ? "" : dt.Rows[0]["VendorName"].ToString();
+                    string currentStatus = dt.Rows[0]["Status"].ToString();
+                    int currentStudentId = Convert.ToInt32(dt.Rows[0]["StudentId"]);
+                    string currentStudentName = dt.Rows[0]["StudentName"].ToString();
+
+                    // Create update form
+                    Form prompt = new Form()
+                    {
+                        Width = 500,
+                        Height = 350,
+                        FormBorderStyle = FormBorderStyle.FixedDialog,
+                        Text = "Update Parcel",
+                        StartPosition = FormStartPosition.CenterScreen,
+                        MaximizeBox = false,
+                        MinimizeBox = false,
+                        BackColor = Color.White
+                    };
+
+                    Label lblTitle = new Label() { Left = 20, Top = 20, Text = "Update Parcel Details", Font = new Font("Segoe UI", 12, FontStyle.Bold), ForeColor = Color.FromArgb(37, 99, 235), AutoSize = true };
+                    
+                    Label lblTracking = new Label() { Left = 20, Top = 60, Text = "Tracking Number:", AutoSize = true };
+                    TextBox txtTracking = new TextBox() { Left = 20, Top = 85, Width = 420, Text = currentTracking };
+
+                    Label lblVendor = new Label() { Left = 20, Top = 120, Text = "Vendor Name (optional):", AutoSize = true };
+                    TextBox txtVendor = new TextBox() { Left = 20, Top = 145, Width = 420, Text = currentVendor };
+
+                    Label lblStatus = new Label() { Left = 20, Top = 180, Text = "Status:", AutoSize = true };
+                    ComboBox cmbStatus = new ComboBox() { Left = 20, Top = 205, Width = 420 };
+                    cmbStatus.Items.AddRange(new string[] { "Pending", "Collected" });
+                    cmbStatus.SelectedItem = currentStatus;
+
+                    Button btnSave = new Button() { Text = "Save", Left = 280, Width = 130, Top = 260, DialogResult = DialogResult.OK, BackColor = Color.FromArgb(37, 99, 235), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
+                    Button btnCancel = new Button() { Text = "Cancel", Left = 140, Width = 130, Top = 260, DialogResult = DialogResult.Cancel, BackColor = Color.FromArgb(100, 116, 139), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
+
+                    prompt.Controls.Add(lblTitle);
+                    prompt.Controls.Add(lblTracking);
+                    prompt.Controls.Add(txtTracking);
+                    prompt.Controls.Add(lblVendor);
+                    prompt.Controls.Add(txtVendor);
+                    prompt.Controls.Add(lblStatus);
+                    prompt.Controls.Add(cmbStatus);
+                    prompt.Controls.Add(btnSave);
+                    prompt.Controls.Add(btnCancel);
+                    prompt.AcceptButton = btnSave;
+                    prompt.CancelButton = btnCancel;
+
+                    if (prompt.ShowDialog() == DialogResult.OK)
+                    {
+                        string newTracking = txtTracking.Text.Trim();
+                        string newVendor = txtVendor.Text.Trim();
+                        string newStatus = cmbStatus.SelectedItem.ToString();
+
+                        if (string.IsNullOrWhiteSpace(newTracking))
+                        {
+                            MessageBox.Show("Tracking number cannot be empty.");
+                            return;
+                        }
+
+                        string query = "UPDATE Parcels SET TrackingNumber = @track, VendorName = @vendor, Status = @status WHERE ParcelId = @pid";
+                        DatabaseHelper.ExecuteNonQuery(query,
+                            new SqlParameter("@track", newTracking),
+                            new SqlParameter("@vendor", string.IsNullOrWhiteSpace(newVendor) ? (object)DBNull.Value : newVendor),
+                            new SqlParameter("@status", newStatus),
+                            new SqlParameter("@pid", parcelId));
+
+                        MessageBox.Show("Parcel updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        LoadParcels();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error updating parcel: " + ex.Message);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Select a parcel first.");
+            }
+        }
+
+        private void btnDeleteParcel_Click(object sender, EventArgs e)
+        {
+            if (dgvParcels.SelectedCells.Count > 0)
+            {
+                try
+                {
+                    int rowIndex = dgvParcels.SelectedCells[0].RowIndex;
+                    int parcelId = Convert.ToInt32(dgvParcels.Rows[rowIndex].Cells["ParcelId"].Value);
+                    string parcelTracking = dgvParcels.Rows[rowIndex].Cells["TrackingNumber"].Value.ToString();
+
+                    DialogResult confirm = MessageBox.Show(
+                        $"Are you sure you want to delete this parcel entry?\n\nParcel ID: {parcelId}\nTracking: {parcelTracking}\n\nThis action cannot be undone.",
+                        "Confirm Delete",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Warning);
+
+                    if (confirm == DialogResult.Yes)
+                    {
+                        // Delete associated tokens first
+                        string deleteTokens = "DELETE FROM Tokens WHERE ParcelId = @pid";
+                        DatabaseHelper.ExecuteNonQuery(deleteTokens, new SqlParameter("@pid", parcelId));
+
+                        // Delete the parcel
+                        string deleteParcel = "DELETE FROM Parcels WHERE ParcelId = @pid";
+                        DatabaseHelper.ExecuteNonQuery(deleteParcel, new SqlParameter("@pid", parcelId));
+
+                        MessageBox.Show("Parcel deleted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        LoadParcels();
+                        UpdateDashboard();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error deleting parcel: " + ex.Message);
                 }
             }
             else
