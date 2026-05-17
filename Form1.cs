@@ -989,6 +989,7 @@ namespace ParcelOffice_project
                 StudentInfo student = cmbStudentSearch.SelectedItem as StudentInfo;
                 int studentId = student.StudentId;
                 string studentEmail = student.StudentEmail;
+                string studentName = student.StudentName;
 
                 string query = "INSERT INTO Parcels (StudentId, TrackingNumber, VendorName, ArrivalTime, Status) VALUES (@sid, @track, @vendorName, @arrival, @status)";
                 DatabaseHelper.ExecuteNonQuery(query,
@@ -998,8 +999,52 @@ namespace ParcelOffice_project
                     new SqlParameter("@arrival", DateTime.Now),
                     new SqlParameter("@status", "Pending"));
 
-                MessageBox.Show("Parcel saved successfully!");
-                EmailHelper.SendNotification(studentEmail, trackingNumber, vendorName);
+                // Get the newly inserted parcel ID
+                int newParcelId = Convert.ToInt32(DatabaseHelper.ExecuteScalar("SELECT MAX(ParcelId) FROM Parcels WHERE StudentId = @sid AND TrackingNumber = @track",
+                    new SqlParameter("@sid", studentId),
+                    new SqlParameter("@track", trackingNumber)));
+
+                // Auto-generate token and get collection time
+                int tokenNumber = 0;
+                string collectionTimeSlot = "";
+                
+                var slot = TimetableHelper.GetNextAvailableSlot(studentId);
+                if (slot != null)
+                {
+                    DateTime slotStartTime = slot.Value.SlotStart;
+                    DateTime slotEndTime = slot.Value.SlotEnd;
+
+                    TimetableHelper.ScheduleType scheduleType = TimetableHelper.GetStudentScheduleType(studentId);
+                    string slotName = TimetableHelper.GetSlotName(slotStartTime, slotEndTime, scheduleType);
+
+                    object maxToken = DatabaseHelper.ExecuteScalar("SELECT MAX(TokenNumber) FROM Tokens WHERE CONVERT(date, SlotEndTime) = CONVERT(date, @slotDate)",
+                        new SqlParameter("@slotDate", slotEndTime));
+
+                    tokenNumber = (maxToken == DBNull.Value || maxToken == null) ? 1 : Convert.ToInt32(maxToken) + 1;
+
+                    string tokenQuery = "INSERT INTO Tokens (ParcelId, TokenNumber, SlotStartTime, SlotEndTime, Status) VALUES (@pid, @tno, @start, @end, @status)";
+                    DatabaseHelper.ExecuteNonQuery(tokenQuery,
+                        new SqlParameter("@pid", newParcelId),
+                        new SqlParameter("@tno", tokenNumber),
+                        new SqlParameter("@start", slotStartTime),
+                        new SqlParameter("@end", slotEndTime),
+                        new SqlParameter("@status", "Active"));
+
+                    collectionTimeSlot = TimetableHelper.FormatSlotTime(slotStartTime, slotEndTime) + $" ({slotName})";
+                }
+
+                // Send email with token and collection time
+                EmailHelper.SendNotification(studentEmail, trackingNumber, vendorName, studentName, tokenNumber, collectionTimeSlot);
+
+                string successMessage = "Parcel saved successfully!";
+                if (tokenNumber > 0)
+                {
+                    successMessage += $"\n\nToken #{tokenNumber} generated automatically.\nCollection Time: {collectionTimeSlot}";
+                }
+                MessageBox.Show(successMessage, "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // Refresh the parcels grid in Search tab
+                LoadParcels();
 
                 // Clear all fields
                 cmbStudentSearch.SelectedIndex = -1;
@@ -1219,9 +1264,9 @@ namespace ParcelOffice_project
                 int pending = Convert.ToInt32(DatabaseHelper.ExecuteScalar("SELECT COUNT(*) FROM Parcels WHERE Status = 'Pending'") ?? 0);
                 int collected = Convert.ToInt32(DatabaseHelper.ExecuteScalar("SELECT COUNT(*) FROM Parcels WHERE Status = 'Collected'") ?? 0);
 
-                lblTotalParcels.Text = "Total Parcels: " + total;
-                lblPendingParcels.Text = "Pending Parcels: " + pending;
-                lblCollectedParcels.Text = "Collected Parcels: " + collected;
+                lblTotalParcelsValue.Text = total.ToString();
+                lblPendingParcelsValue.Text = pending.ToString();
+                lblCollectedParcelsValue.Text = collected.ToString();
             }
             catch { }
         }

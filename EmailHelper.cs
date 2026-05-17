@@ -19,7 +19,10 @@ namespace ParcelOffice_project
         /// <param name="toEmail">Student's email address</param>
         /// <param name="trackingNumber">Parcel tracking number</param>
         /// <param name="vendorName">Optional courier/vendor name</param>
-        public static void SendNotification(string toEmail, string trackingNumber, string vendorName = "")
+        /// <param name="studentName">Student's name</param>
+        /// <param name="tokenNumber">Token number (if generated)</param>
+        /// <param name="collectionTime">Collection time slot</param>
+        public static void SendNotification(string toEmail, string trackingNumber, string vendorName = "", string studentName = "", int tokenNumber = 0, string collectionTime = "")
         {
             try
             {
@@ -34,7 +37,7 @@ namespace ParcelOffice_project
                 var toAddress = new MailAddress(toEmail);
 
                 string subject = "Parcel Arrival Notification";
-                string htmlBody = GenerateEmailBody(trackingNumber, toEmail, vendorName);
+                string htmlBody = GenerateEmailBody(trackingNumber, toEmail, vendorName, studentName, tokenNumber, collectionTime);
 
                 // Configure SMTP Client
                 var smtp = new SmtpClient
@@ -83,11 +86,30 @@ namespace ParcelOffice_project
         /// <summary>
         /// Generates a formatted HTML email body
         /// </summary>
-        private static string GenerateEmailBody(string trackingNumber, string studentEmail, string vendorName)
+        private static string GenerateEmailBody(string trackingNumber, string studentEmail, string vendorName, string studentName = "", int tokenNumber = 0, string collectionTime = "")
         {
             string vendorHtml = string.IsNullOrWhiteSpace(vendorName)
                 ? string.Empty
                 : $"<div style='margin-top:10px;'><span class='tracking-label'>Courier/Vendor:</span> <strong>{vendorName}</strong></div>";
+
+            string greeting = string.IsNullOrWhiteSpace(studentName) ? "Dear Student" : $"Dear {studentName}";
+            
+            string tokenSection = "";
+            if (tokenNumber > 0 && !string.IsNullOrWhiteSpace(collectionTime))
+            {
+                tokenSection = $@"
+            <div class='token-section'>
+                <h3>🎫 Your Collection Token</h3>
+                <div class='token-box'>
+                    <div class='token-label'>Token Number:</div>
+                    <div class='token-number'>#{tokenNumber}</div>
+                    <div class='token-time'>Collection Time: <strong>{collectionTime}</strong></div>
+                </div>
+                <p style='margin-top:15px;'>📌 <strong>Please collect your parcel during your allocated time slot.</strong></p>
+            </div>";
+            }
+
+            string arrivalTime = DateTime.Now.ToString("MMMM dd, yyyy 'at' h:mm tt");
 
             return $@"
 <!DOCTYPE html>
@@ -95,16 +117,22 @@ namespace ParcelOffice_project
 <head>
     <style>
         body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }}
-        .header {{ background-color: #0096641; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #fff; }}
+        .header {{ background-color: #2563EB; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }}
         .content {{ padding: 20px; }}
-        .tracking {{ background-color: #f0f0f0; padding: 15px; border-left: 4px solid #00a651; margin: 20px 0; }}
+        .tracking {{ background-color: #f0f0f0; padding: 15px; border-left: 4px solid #2563EB; margin: 20px 0; }}
         .tracking-label {{ font-weight: bold; color: #666; }}
-        .tracking-number {{ font-size: 24px; color: #00a651; font-weight: bold; letter-spacing: 2px; }}
+        .tracking-number {{ font-size: 24px; color: #2563EB; font-weight: bold; letter-spacing: 2px; }}
+        .arrival-info {{ background-color: #e8f5e9; padding: 12px; border-left: 4px solid #16A34A; margin: 15px 0; }}
+        .token-section {{ background-color: #fff7ed; padding: 15px; border-left: 4px solid #F59E0B; margin: 20px 0; border-radius: 5px; }}
+        .token-section h3 {{ color: #F59E0B; margin-top: 0; }}
+        .token-box {{ text-align: center; padding: 15px; background: white; border-radius: 8px; margin: 10px 0; }}
+        .token-label {{ font-size: 14px; color: #666; }}
+        .token-number {{ font-size: 36px; color: #F59E0B; font-weight: bold; margin: 5px 0; }}
+        .token-time {{ font-size: 16px; color: #333; margin-top: 10px; }}
         .instructions {{ margin: 20px 0; padding: 15px; background-color: #f9f9f9; border-radius: 5px; }}
-        .instructions h3 {{ color: #00a651; margin-top: 0; }}
+        .instructions h3 {{ color: #2563EB; margin-top: 0; }}
         .footer {{ text-align: center; font-size: 12px; color: #999; padding-top: 20px; border-top: 1px solid #ddd; margin-top: 20px; }}
-        .button {{ background-color: #00a651; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 15px; }}
     </style>
 </head>
 <body>
@@ -114,9 +142,13 @@ namespace ParcelOffice_project
         </div>
 
         <div class='content'>
-            <p>Dear Student,</p>
+            <p>{greeting},</p>
 
             <p>Great news! Your parcel has arrived at the <strong>Parcel Office</strong> and is ready for collection.</p>
+
+            <div class='arrival-info'>
+                <strong>📅 Parcel Arrival Time:</strong> {arrivalTime}
+            </div>
 
             <div class='tracking'>
                 <div class='tracking-label'>Tracking Number:</div>
@@ -124,10 +156,12 @@ namespace ParcelOffice_project
                 {vendorHtml}
             </div>
 
+            {tokenSection}
+
             <div class='instructions'>
                 <h3>📋 Collection Instructions:</h3>
                 <ul>
-                    <li>Visit the <strong>Student Support Office</strong> during working hours</li>
+                    <li>Visit the <strong>Parcel Office</strong> during working hours</li>
                     <li>Have your <strong>Student ID</strong> ready</li>
                     <li>Quote your <strong>Tracking Number: {trackingNumber}</strong></li>
                     <li>Complete the collection formalities</li>
@@ -143,14 +177,14 @@ namespace ParcelOffice_project
                 </ul>
             </div>
 
-            <p>If you have any questions or issues collecting your parcel, please contact the Student Support Office.</p>
+            <p>If you have any questions or issues collecting your parcel, please contact the Parcel Office.</p>
 
             <p>Thank you!</p>
         </div>
 
         <div class='footer'>
             <p>This is an automated message from Parcel Office Management System</p>
-            <p>Please do not reply to this email. Contact Student Support for assistance.</p>
+            <p>Please do not reply to this email. Contact Parcel Office for assistance.</p>
         </div>
     </div>
 </body>
